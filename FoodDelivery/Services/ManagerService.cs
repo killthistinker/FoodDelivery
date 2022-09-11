@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FoodDelivery.Helpers;
 using FoodDelivery.Models;
 using FoodDelivery.Models.ViewModels;
+using FoodDelivery.Models.ViewModels.IndexViewModels;
 using FoodDelivery.Models.ViewModels.PointViewModels;
 using FoodDelivery.Repository.Interfaces;
 using FoodDelivery.Services.Abstractions;
@@ -92,7 +93,6 @@ namespace FoodDelivery.Services
                 Dishes = dishes,
                 Model = new DishViewModel(),
                 Points = _pointRepository.GetAll(),
-                Delete = new DeleteDishViewModel()
             };
          
             return model;

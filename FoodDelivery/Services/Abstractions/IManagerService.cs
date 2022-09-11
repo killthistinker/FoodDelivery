@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using FoodDelivery.Models;
 using FoodDelivery.Models.ViewModels;
+using FoodDelivery.Models.ViewModels.IndexViewModels;
 using FoodDelivery.Models.ViewModels.PointViewModels;
 
 namespace FoodDelivery.Services.Abstractions

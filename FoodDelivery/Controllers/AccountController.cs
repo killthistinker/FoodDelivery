@@ -1,9 +1,9 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using FoodDelivery.Helpers;
 using FoodDelivery.Models.ViewModels;
 using FoodDelivery.Services.Abstractions;
 using Microsoft.AspNetCore.Mvc;
-using Wallet.Helpers;
 using StatusCodes = FoodDelivery.Enums.StatusCodes;
 
 namespace FoodDelivery.Controllers
