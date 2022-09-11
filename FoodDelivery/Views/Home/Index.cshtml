@@ -1,0 +1,24 @@
+﻿@model PointIndexViewModel
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+@if (Model is null)
+{
+    <h2>Список заведений пуст</h2>
+}
+else
+{
+    <div class="point-cards d-flex flex-wrap justify-content-start mt-5">
+        @foreach (var point in Model.Points)
+        {
+            <div class="card mt-5 mr-5" style="width: 20rem;">
+                <img src="~/@point.Image" class="card-img-top" alt="изображение заведения" style="height: 200px">
+                <div class="card-body d-flex flex-column align-items-center">
+                    <h5 class="card-title text-center">@point.Name</h5>
+                    <a asp-action="GetPointInfo" asp-controller="Home" asp-route-id="@point.Id" class="btn btn-outline-primary">Подробная информация</a>
+                </div>
+            </div>
+        }
+    </div>
+}
