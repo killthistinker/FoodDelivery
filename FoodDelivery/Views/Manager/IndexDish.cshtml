@@ -1,0 +1,153 @@
+﻿@model IndexDishViewModel
+
+@{
+    ViewBag.Title = "Список блюд";
+    Layout = "_Layout";
+}
+
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#dishModal">
+  Добавить блюдо
+</button>
+@if (Model is null)
+{
+    <h2>Список пуст</h2>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Название блюда</th>
+            <th scope="col">Описание</th>
+            <th scope="col">Заведение</th>
+            <th scope="col">Цена</th>
+             <th scope="col">Действие</th>
+        </tr>
+        </thead>
+        <tbody>
+       
+            @foreach (var dish in Model.Dishes)
+            {
+                <tr>
+                <th scope="row">@dish.Id</th>
+                <td>@dish.Name</td>
+                <td>@dish.Description</td>
+                <td>@dish.Point.Name</td>
+                <td>@dish.Price</td>
+                <th><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#deleteDish" dishId="@dish.Id">
+                    Удалить блюдо
+                </button></th>
+                         </tr>
+            }
+           
+       
+        
+        </tbody>
+    </table>
+}
+@if (Model.Points is null)
+{
+    <h2>Добавьте заведение для добавления блюда</h2>
+}
+else
+{
+   <div class="modal fade" id="dishModal" tabindex="-1" aria-labelledby="dishModal" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Добвавление блюда</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <form asp-action="AddDish" asp-controller="Manager" method="post"  asp-antiforgery="true">
+              <div class="mb-3">
+                  <label for="point-name" asp-for="@Model.Model.Name" class="form-label">Имя блюда</label>
+                  <input type="text" asp-for="@Model.Model.Name" class="form-control" id="point-name" placeholder="Введите имя блюда">
+                  <span class="text-danger" asp-validation-for="@Model.Model.Name"></span>
+              </div>
+              <div class="mb-3">
+                  <label for="point-name" asp-for="@Model.Model.Pirce" class="form-label">Цена блюда</label>
+                  <input type="text" asp-for="@Model.Model.Pirce" class="form-control" id="point-name" placeholder="Введите цену блюда">
+                  <span class="text-danger" asp-validation-for="@Model.Model.Pirce"></span>
+              </div>
+              <div class="mb-3">
+              <label asp-for="@Model.Model.PointId" class="form-label">Название заведения</label>
+                  <select class="form-select" asp-for="Model.PointId">
+                      @foreach (var point in Model.Points)
+                      {
+                          <option value="@point.Id">@point.Name</option>
+                      }
+                  </select>
+                  <span class="text-danger" asp-validation-for="@Model.Model.PointId"></span>
+              </div>
+              <div class="mb-3">
+                  <label for="point-description" asp-for="@Model.Model.Description" class="form-label">Описание</label>
+                  <textarea type="file" asp-for="@Model.Model.Description" class="form-control" id="point-description" placeholder="Описание блюда"></textarea>
+                  <span class="text-danger" asp-validation-for="@Model.Model.Description"></span>
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                  <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+              </div>
+          </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deleteDish" tabindex="-1" aria-labelledby="dishModal" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Удаление блюда</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <form id="delete-form" asp-antiforgery="true">
+              <h2>Вы действительно хотите удалить блюдо?</h2>
+              <input type="hidden" value="" id="dish-id">
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                  <button type="submit" class="btn btn-primary">Подвердить</button>
+              </div>
+          </form>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+
+
+@section Scripts
+{
+    <script >
+     $('#deleteDish').on('show.bs.modal', function (event) {
+            const button = $(event.relatedTarget);
+            var dishId = button.attr('dishId');
+            $('#dish-id').val(dishId);
+            
+            $('#delete-form').submit(function (e){
+                e.preventDefault();
+                console.log(dishId)
+                var deleteDishViewModel = {
+                    dishId: dishId
+                }
+                console.log(deleteDishViewModel)
+             $.post('https://localhost:5001/manager/deletedish',{id:dishId}, function (date){
+                 console.log(date)
+                 if (date === 200){ $(location).attr('href','https://localhost:5001/manager/indexdish');}
+               
+             })
+            }) 
+        });
+</script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

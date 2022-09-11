@@ -1,0 +1,135 @@
+﻿@model IndexPointViewModel
+
+@{
+    ViewBag.Title = "Список заведений";
+    Layout = "_Layout";
+}
+
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#pointModal">
+  Добавить заведение
+</button>
+@if (Model is null)
+{
+    <h2>Список пуст</h2>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Имя заведения</th>
+            <th scope="col">Описание</th>
+            <th scope="col">Изображение</th>
+             <th scope="col">Действия</th>
+        </tr>
+        </thead>
+        <tbody>
+      
+            @foreach (var point in Model.Points)
+            {
+                <tr>
+                    <th scope="row">@point.Id</th>
+                    <td>@point.Name</td>
+                    <td>@point.Description</td>
+                    <td>
+                        <div class="image-box-point">
+                            <img class="point-image" src="~/@point.Image" alt="">
+                        </div>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#deletePoint" pointId="@point.Id">
+                            Удалить заведение
+                        </button>
+                    </td>
+                </tr>
+            }
+      
+        </tbody>
+    </table>
+}
+
+<div class="modal fade" id="pointModal" tabindex="-1" aria-labelledby="pointModal" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Добвавление заведения</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <form asp-action="AddPoint" asp-controller="Manager" method="post"  enctype="multipart/form-data" asp-antiforgery="true">
+             <div class="mb-3">
+               <label for="point-name" asp-for="@Model.Model.Name"  class="form-label">Имя заведения</label>
+                 <input type="text" asp-for="@Model.Model.Name" class="form-control" id="point-name" placeholder="Введите имя заведения">
+                 <span class="text-danger" asp-validation-for="@Model.Model.Name"></span>
+             </div>
+             <div class="mb-3">
+               <label for="point-file" asp-for="@Model.Model.File" class="form-label">Изображение заведения</label>
+                 <input type="file" asp-for="@Model.Model.File" class="form-control" id="point-file" placeholder="изображение">
+                 <span class="text-danger" asp-validation-for="@Model.Model.File"></span>
+             </div>
+              <div class="mb-3">
+                  <label for="point-description" asp-for="@Model.Model.Description" class="form-label">Описание</label>
+                  <textarea type="file" asp-for="@Model.Model.Description" class="form-control" id="point-description" placeholder="Описание заведения"></textarea>
+                  <span class="text-danger" asp-validation-for="@Model.Model.Description"></span>
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                  <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+              </div>
+          </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deletePoint" tabindex="-1" aria-labelledby="deletePoint" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Удаление заведение</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <form id="delete-form" asp-antiforgery="true">
+              <h2>Вы действительно хотите удалить заведение?</h2>
+              <input type="hidden" value="" id="point-id">
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                  <button type="submit" class="btn btn-primary">Подвердить</button>
+              </div>
+          </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section Scripts
+{
+      <script >
+         $('#deletePoint').on('show.bs.modal', function (event) {
+                const button = $(event.relatedTarget);
+                var pointId = button.attr('pointId');
+                $('#point-id').val(pointId);
+                
+                $('#delete-form').submit(function (e){
+                    e.preventDefault();
+                    console.log(pointId)
+             
+                 $.post('https://localhost:5001/manager/deletepoint',{id:pointId}, function (date){
+                     console.log(date)
+                     if (date === 200){ $(location).attr('href','https://localhost:5001/manager/indexpoint');}
+                   
+                 })
+                }) 
+            });
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+
