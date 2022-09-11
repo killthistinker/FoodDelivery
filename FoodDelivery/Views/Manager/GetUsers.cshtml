@@ -1,0 +1,160 @@
+﻿@model FoodDelivery.Models.ViewModels.IndexViewModels.IndexUserViewModel
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addUserModal">
+  Добавить пользователя
+</button>
+@if (Model == null)
+{
+    <h2>Список пуст</h2>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Email</th>
+            <th scope="col">Имя</th>
+            <th scope="col">Действие</th>
+        </tr>
+        </thead>
+        <tbody>
+    
+            @foreach (var user in Model.Users)
+            {
+                <tr>
+                <th scope="row">@user.Id</th>
+                <td>@user.Email</td>
+                <td>@user.UserName</td>
+                    <th><button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteUser" userId="@user.Id">
+                            Удалить пользователя
+                        </button>
+                        @if (user.IamAdmin)
+                        {
+                            <button type="button" class="btn btn-primary" onclick="addRole('@user.Id')" userId="@user.Id">
+                                Удалить права доступа
+                            </button> 
+                       
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-primary" onclick="addRole('@user.Id')" userId="@user.Id">
+                                Выдать права доступа
+                            </button>  
+                        }
+                    </th>
+                    </tr>
+            }
+        </tbody>
+    </table>
+    <div class="modal fade" id="deleteUser" tabindex="-1" aria-labelledby="deleteUser" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Удаление блюда</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="delete-form" asp-antiforgery="true">
+                    <h2>Вы действительно хотите удалить пользователя?</h2>
+                    <input type="hidden" value="" id="user-id">
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                        <button type="submit" class="btn btn-primary">Подвердить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+ <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModal" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Добвавление блюда</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <form asp-action="AddUser" asp-controller="User" class="registration-form"
+                method="post" asp-antiforgery="true">
+              <div asp-validation-summary="ModelOnly"></div>
+              <div class="mb-3">
+                  <input asp-for="@Model.Model.Email" class="registration-input form-control" type="text"
+                         placeholder="Email адрес">
+                  <span class="validation text-danger" asp-validation-for="@Model.Model.Email"></span>
+              </div>
+              <div class="mb-3">
+                  <input asp-for="@Model.Model.UserName" id="log-in" class="registration-input form-control" type="text" placeholder="Имя пользователя">
+                  <span class="validation text-danger" asp-validation-for="@Model.Model.UserName"></span>
+              </div>
+              <div class="mb-3 password-box">
+                  <input asp-for="@Model.Model.Password" id="password" class="password-input form-control" type="password"
+                         placeholder="Пароль">
+                  <div id="password-view" class="password-img">
+                      <img src="~/images/view.png" class="view" alt="view">
+                  </div>
+                  <span class="validation text-danger" asp-validation-for="@Model.Model.Password"></span>
+              </div>
+              <div class="mb-3 password-box">
+                  <input asp-for="@Model.Model.PasswordConfirm" id="confirm" class="password-input form-control" type="password"
+                         placeholder="Подтверждение пароля">
+                  <div id="confirm-view" class="password-img">
+                      <img src="~/images/view.png" class="view" alt="view">
+                  </div>
+                  <span class="validation text-danger" asp-validation-for="@Model.Model.PasswordConfirm"></span>
+              </div>
+              <button class="login-btn btn btn-primary" type="submit">Регистрация</button>
+              </form>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+
+
+@section Scripts
+{
+    <script >
+     $('#deleteUser').on('show.bs.modal', function (event) {
+            const button = $(event.relatedTarget);
+            var userId = button.attr('userId');
+            $('#user-id').val(userId);
+            console.log(userId);
+            $('#delete-form').submit(function (e){
+                e.preventDefault();
+                console.log(userId)
+             $.post('https://localhost:5001/user/deleteuser',{id:userId}, function (date){
+                 console.log(date)
+                 if (date === 200){ $(location).attr('href','https://localhost:5001/manager/getusers');}
+          
+             })
+            }) 
+        });
+     function addRole(userId){
+          $.ajax({
+                                 method: "POST",
+                                 url: "https://localhost:5001/manager/addrole",
+                                 data: { userId: userId},
+                                 dataType: "json",
+                                 success: function (e) {
+                                    $(location).attr('href', 'https://localhost:5001/manager/getusers')
+                                 }
+                             })
+                         }   
+</script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+

@@ -1,0 +1,124 @@
+﻿@model PointInfoViewModel
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+
+@if (Model is null)
+{
+    <h2>Заведение отсутствует</h2>
+}
+else
+{
+    
+    <div class="d-flex justify-content-between align-items-start">
+        <div class="card mb-3" style="max-width: 540px;">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <img src="~/@Model.Image" class="img-fluid rounded-start" alt="изображение">
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h5 class="card-title">@Model.Name</h5>
+                            <p class="card-text">@Model.Description</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card text-bg-primary mb-3" style="max-width: 18rem;">
+                <div class="card-header">Корзина</div>
+                <div class="point-info">
+                     <input type="text" id="point-info" hidden value="@Model.Id">
+                </div>
+                <div class="card-body">
+                    <div id="basket">
+                        <h5 class="card-title">Блюдо:</h5>
+                        <h5 class="card-title">Количество:</h5>
+                    </div>
+                    <p class="card-text" id="basket-sum">Сумма: @Model.Basket.Sum</p>
+                    <input type="text" hidden id="basket-balance" value="@Model.Basket.Sum">
+                </div>
+            </div>
+    </div>
+    @if (Model.Dishes is not null)
+    {
+        <div class="d-flex flex-row justify-content-between" >
+        @foreach (var dish in Model.Dishes)
+        {
+            <div class="card mt-5" style="width: 18rem;">
+                <div class="card-body">
+                    <h5 class="card-title">Имя блюда: @dish.Name</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">Цена: @dish.Price</h6>
+                    <p class="card-text">Описание: @dish.Description</p>
+                    <button class="btn btn-outline-info" onclick="addToBasket('@dish.Id', '@Model.Id')">Заказать</button>
+                </div>
+            </div>
+        }
+        </div>
+    }
+}
+
+@section Scripts
+{
+    <script >
+                var basket = $('#basket');
+                var basketBalance = $('#basket-balance');
+                var basketSum = $('#basket-sum');
+                var pointInfo = $('#point-info').val();
+                function GetOrders() {
+                    $.ajax({
+                        method: "GET",
+                        url: "https://localhost:5001/basket/getorders",
+                        data: { pointId: pointInfo },
+                        success: function (e) {
+                            console.log(e)
+                            basket.empty();
+                            for (var i = 0; i < e.length; i++) {
+                                basket.append(` <div class="mt-1 d-flex justify-content-between align-items-center" id="box-${String(e[i].dish.id)}" "><div class="basket-info">
+                                        <h5 class="card-title basket-text">Блюдо: ${e[i].dish.name}</h5>
+                                    <h5 class="card-title basket-text">Количество: ${e[i].dishCount}</h5></div>                                               
+                                     <button class="btn btn-danger btn-sm" onclick="deleteDish(${e[i].dish.id},${e[i].dish.pointId})">Удалить заказ</button></div>`)
+                            }
+                        }
+                    }
+                    )
+                }
+    
+                GetOrders();
+                console.log(sum)
+                function addToBasket(dishId, pointId) {
+                    var sum = 0;
+                    $.ajax({
+                        method: "POST",
+                        url: "https://localhost:5001/basket/adddish",
+                        data: { dishId: dishId, pointId: pointId },
+                        dataType: "json",
+                        success: function (e) {
+                            basket.empty();
+                            console.log(e);
+                            for (var i = 0; i < e.length; i++) {
+                                basket.append(` <div class="mt-1 d-flex justify-content-between align-items-center" id="box-${String(e[i].dish.id)}"><div class="basket-info"><h5 class="card-title basket-text">Блюдо: ${e[i].dish.name}</h5>
+                                                     <h5 class="card-title basket-text">Количество: ${e[i].dishCount}</h5></div>
+                                                     <button class="btn btn-danger btn-sm" onclick="deleteDish(${e[i].dish.id},${e[i].dish.pointId})">Удалить заказ</button></div>`);
+                                sum += Number(e[i].dish.price) * Number(e[i].dishCount)
+                            }
+                            basketSum.text(`Сумма: ${sum}`);
+                        }
+                    })
+                }
+    
+                function deleteDish(orderId, pointId) {
+                    $.ajax({
+                        method: "POST",
+                        url: "https://localhost:5001/basket/deleteorder",
+                        data: { orderId: orderId, pointId: pointId },
+                        dataType: "json",
+                        success: function (e) {
+                            $(`#box-${String(orderId)}`).empty()
+                            basketSum.text(`Сумма: ${e.balance}`);
+                        }
+                    })
+                }
+    </script>
+}
