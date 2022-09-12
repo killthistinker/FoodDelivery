@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using FoodDelivery.Enums;
 using FoodDelivery.Models;
 using FoodDelivery.Models.ViewModels;
@@ -36,6 +37,7 @@ namespace FoodDelivery.Services
             customerInfo.Email = model.Email;
             customerInfo.Phone = model.Phone;
             customerInfo.Address = model.Address;
+            customerInfo.StartDate = DateTime.Now;
 
             await _customerInfoRepository.AddAsync(customerInfo);
             await _customerInfoRepository.SaveAsync();
