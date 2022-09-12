@@ -3,6 +3,7 @@ using FoodDelivery.DataObjects;
 using FoodDelivery.Enums;
 using FoodDelivery.Models.ViewModels;
 using FoodDelivery.Models.ViewModels.PointViewModels;
+using FoodDelivery.Repository.Interfaces;
 using FoodDelivery.Services.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,11 +15,14 @@ namespace FoodDelivery.Controllers
     {
         private readonly IManagerService _managerService;
         private readonly IRoleService _roleService;
+        private readonly ICustomerInfoRepository _infoRepository;
+    
 
-        public ManagerController(IManagerService managerService, IRoleService roleService)
+        public ManagerController(IManagerService managerService, IRoleService roleService, ICustomerInfoRepository infoRepository)
         {
             _managerService = managerService;
             _roleService = roleService;
+            _infoRepository = infoRepository;
         }
 
         [HttpGet]
@@ -33,6 +37,13 @@ namespace FoodDelivery.Controllers
         {
             var points = _managerService.GetAllPoints();
             return View(points);
+        }
+
+        [HttpGet]
+        public IActionResult IndexOrders()
+        {
+            var orders = _infoRepository.GetAll();
+            return View(orders);
         }
         
         [HttpPost]
@@ -55,7 +66,6 @@ namespace FoodDelivery.Controllers
             return RedirectToAction("IndexDish");
         }
 
-        [HttpPost]
         [HttpPost]
         [Authorize(Roles = "admin, administrator")]
         public async Task<IActionResult> DeleteDish(int id)

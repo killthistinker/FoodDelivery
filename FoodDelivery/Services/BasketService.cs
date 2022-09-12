@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FoodDelivery.Enums;
 using FoodDelivery.Models;
 using FoodDelivery.Models.ViewModels.BasketViewModels;
 using FoodDelivery.Repository.Interfaces;
@@ -63,6 +64,18 @@ namespace FoodDelivery.Services
             await _basketRepository.SaveAsync();
             await _pointRepository.SaveAsync();
             return new BalanceViewModel { Balance = point.Basket.Sum };
+        }
+
+        public async Task<int> Clear(int pointId)
+        {
+            var point = await _pointRepository.FirstOrDefaultByIdAsync(pointId);
+            if (point is null) return (int)StatusCodes.Error;
+            
+            point.Basket.Orders.Clear();
+            point.Basket.Sum = 0;
+            _pointRepository.Update(point);
+            await _pointRepository.SaveAsync();
+            return (int)StatusCodes.Success;
         }
 
         private List<BasketViewModel> GetOrdersCount(Point point)

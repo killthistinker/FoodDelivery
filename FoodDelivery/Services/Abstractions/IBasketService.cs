@@ -10,5 +10,6 @@ namespace FoodDelivery.Services.Abstractions
         public Task<List<BasketViewModel>> AddDish(int dishId, int pointId);
         public Task<List<BasketViewModel>> GetOrders(int pointId);
         public Task<BalanceViewModel> DeleteOrder(int orderId, int pointId);
+        public Task<int> Clear(int pointId);
     }
 }

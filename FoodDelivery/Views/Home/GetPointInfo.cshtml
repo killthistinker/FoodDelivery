@@ -38,6 +38,11 @@ else
                     </div>
                     <p class="card-text" id="basket-sum">Сумма: @Model.Basket.Sum</p>
                     <input type="text" hidden id="basket-balance" value="@Model.Basket.Sum">
+                    <div id="actions">
+                         <button type="button" class="btn btn-primary" id="action-button" data-toggle="modal" data-target="#addOrderModal">
+                          Оформить заказ
+                         </button>
+                    </div>
                 </div>
             </div>
     </div>
@@ -59,6 +64,60 @@ else
     }
 }
 
+
+
+
+
+<div class="modal fade" id="addOrderModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Оформление заказа</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="order-form" method="post">
+                    <div class="mb-3">
+                        <label for="order_email" class="form-label">Ваш email</label>
+                        <input type="text" class="form-control" id="order_email" placeholder="Введите email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="order_phone" class="form-label">Номер телефона</label>
+                        <input type="tel" class="form-control" id="order_phone" placeholder="Введите номер телефона">
+                    </div>
+                    <div class="mb-3">
+                        <label for="order_address" class="form-label">Адрес доставки</label>
+                        <input type="tel" class="form-control" id="order_address" placeholder="Введите адрес доставки">
+                    </div>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                    <button type="submit"  class="btn btn-primary" id="submit-btn">Отправить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" tabindex="-1" id="order-information">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Информация о заказе</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="order-information-body">
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 @section Scripts
 {
     <script >
@@ -66,6 +125,15 @@ else
                 var basketBalance = $('#basket-balance');
                 var basketSum = $('#basket-sum');
                 var pointInfo = $('#point-info').val();
+                var addOrderButton = $('#actions');
+                var orderBtn = $('#action-button');  
+                var orderForm = $('#order-form');
+                var orderEmail   = $('#order_email').val();
+                var orderPhone   = $('#order_phone').val();
+                var orderAddress = $('#order_address').val();
+             
+                var order = { Dishes: []};
+                orderBtn.hide();
                 function GetOrders() {
                     $.ajax({
                         method: "GET",
@@ -73,20 +141,25 @@ else
                         data: { pointId: pointInfo },
                         success: function (e) {
                             console.log(e)
-                            basket.empty();
+                            basket.empty();                   
                             for (var i = 0; i < e.length; i++) {
                                 basket.append(` <div class="mt-1 d-flex justify-content-between align-items-center" id="box-${String(e[i].dish.id)}" "><div class="basket-info">
                                         <h5 class="card-title basket-text">Блюдо: ${e[i].dish.name}</h5>
                                     <h5 class="card-title basket-text">Количество: ${e[i].dishCount}</h5></div>                                               
                                      <button class="btn btn-danger btn-sm" onclick="deleteDish(${e[i].dish.id},${e[i].dish.pointId})">Удалить заказ</button></div>`)
+                                     order.Dishes[i] = e[i]                                                                   
                             }
+                            if (e[0].dish !== null){
+                                 orderBtn.show()
+                            }
+                          
                         }
                     }
                     )
                 }
     
                 GetOrders();
-                console.log(sum)
+        
                 function addToBasket(dishId, pointId) {
                     var sum = 0;
                     $.ajax({
@@ -96,18 +169,22 @@ else
                         dataType: "json",
                         success: function (e) {
                             basket.empty();
-                            console.log(e);
+                            console.log(e);                         
                             for (var i = 0; i < e.length; i++) {
                                 basket.append(` <div class="mt-1 d-flex justify-content-between align-items-center" id="box-${String(e[i].dish.id)}"><div class="basket-info"><h5 class="card-title basket-text">Блюдо: ${e[i].dish.name}</h5>
                                                      <h5 class="card-title basket-text">Количество: ${e[i].dishCount}</h5></div>
                                                      <button class="btn btn-danger btn-sm" onclick="deleteDish(${e[i].dish.id},${e[i].dish.pointId})">Удалить заказ</button></div>`);
                                 sum += Number(e[i].dish.price) * Number(e[i].dishCount)
+                                order.Dishes[i] = e[i]
+                                 
                             }
+                              orderBtn.show()
                             basketSum.text(`Сумма: ${sum}`);
+                            console.log(order);
                         }
                     })
                 }
-    
+               
                 function deleteDish(orderId, pointId) {
                     $.ajax({
                         method: "POST",
@@ -117,8 +194,47 @@ else
                         success: function (e) {
                             $(`#box-${String(orderId)}`).empty()
                             basketSum.text(`Сумма: ${e.balance}`);
+                            if (Number(`${e.balance}`) <= 0){
+                                  orderBtn.hide()
+                            }
                         }
                     })
                 }
+                
+             function ClearBasket(){
+                   $.ajax({
+                      method: "POST",
+                      url: "https://localhost:5001/basket/clearbasket",
+                      data: {pointId: pointInfo},
+                      dataType: "json",                                          
+                      success: function (e) {                        
+                          console.log(200);
+                          basket.empty();
+                          basketSum.empty();
+                      }})  
+             }
+               $('#submit-btn').on('click', function (e){
+                    e.preventDefault();                   
+                    order.Email = $('#order_email').val();
+                    order.Phone = $('#order_phone').val();
+                    order.Address = $('#order_address').val();
+                    console.log(order)
+                    $.ajax({
+                         method: "POST",
+                         url: "https://localhost:5001/basket/AddOrder",
+                         data: order,
+                         dataType: "json",                                          
+                         success: function (e) {
+                               $('#addOrderModal').modal('hide');
+                               $('#order-information').modal('show')
+                             if (e === 200){                                 
+                                 $('#order-information-body').empty().append(`<p>Заказ успешно отправлен</p>`)
+                                 ClearBasket();
+                             }
+                             else{
+                                 $('#order-information-body').empty().append(`<p>Произошла ошибка, заказ не отправлен</p>`) 
+                             }
+                         }})
+               })              
     </script>
 }

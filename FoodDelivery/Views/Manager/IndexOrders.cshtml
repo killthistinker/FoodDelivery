@@ -1,0 +1,36 @@
+﻿@model System.Collections.Generic.IEnumerable<FoodDelivery.Models.CustomerInfo>
+@{
+    ViewBag.Title = "Информация о заказах";
+    Layout = "_Layout";
+}
+
+@if (Model is null)
+{
+    <h2>Список пуст</h2>
+}
+else
+{
+    <table class="table">
+    <thead>
+    <tr>
+        <th scope="col">#</th>
+        <th scope="col">Email</th>
+        <th scope="col">Адрес доставки</th>
+        <th scope="col">Дата</th>
+    </tr>
+    </thead>
+    <tbody>
+    
+    @foreach (var info in Model)
+    {
+        <tr>
+            <th scope="row">@info.Id</th>
+            <td>@info.Email</td>
+            <td>@info.Address</td>
+            <td>@info.Phone</td>
+            <td>@info.StartDate</td>
+        </tr>
+    }
+    </tbody>
+    </table>
+}
